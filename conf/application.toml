@@ -1,0 +1,19 @@
+ApplicationName = "MyLNPU"
+[Server]
+Port = 8080
+[Log]
+Path = "./lnpu.log"
+[Redis]
+Host = "172.17.0.2"
+Port = "6379"
+Password = "xiyuan"
+DB = 0
+[MySql]
+Host = "127.0.0.1"
+Port = "3306"
+UserName = "root"
+UserPassword = "xiyuan"
+Database = "lnpu"
+[Proxy]
+EnableProxy = true
+ProxyUrl = "127.0.0.1:1080"
