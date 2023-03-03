@@ -1,31 +1,28 @@
 package handles
 
 import (
-	"MyLNPU/api/common"
 	"MyLNPU/internal/model"
 	"MyLNPU/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
-func GetSystemNotice(c *gin.Context) {
+func GetSystemNotice(c *gin.Context) (any, error) {
 	notice, err := service.GetSystemNotice()
 	if err != nil {
-		common.ErrorResp(c, 500, err)
+		return nil, err
 	}
-	common.SuccessResp(c, map[string]any{"notice": notice})
+	return map[string]any{"notice": notice}, err
 }
 
-func UpdateSystemNotice(c *gin.Context) {
+func UpdateSystemNotice(c *gin.Context) (any, error) {
 	var notice model.Notice
 	err := c.ShouldBind(&notice)
 	if err != nil {
-		common.ErrorResp(c, 401, err)
-		return
+		return nil, err
 	}
 	err = service.UpdateSystemNotice(&notice)
 	if err != nil {
-		common.ErrorResp(c, 500, err)
-		return
+		return nil, err
 	}
-	common.SuccessResp(c, nil)
+	return nil, nil
 }

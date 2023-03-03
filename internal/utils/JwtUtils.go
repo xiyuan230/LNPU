@@ -9,13 +9,13 @@ import (
 
 var signKey = []byte("Sql123..")
 
-type Claim struct {
+type MyClaims struct {
 	OpenID string `json:"openid"`
 	jwt.RegisteredClaims
 }
 
 func JWTNewToken(openid string) (string, error) {
-	claims := Claim{
+	claims := MyClaims{
 		OpenID: openid,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
@@ -34,8 +34,8 @@ func JWTParseToken(token string) (string, error) {
 	if token == "" {
 		return "", errors.New("token is empty")
 	}
-	claim := Claim{}
-	_, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
+	claims := MyClaims{}
+	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return "", errors.New("unexpected signing method")
 		}
@@ -44,11 +44,11 @@ func JWTParseToken(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return claim.OpenID, nil
+	return claims.OpenID, nil
 }
 
 func CheckTokenStatus(token string) bool {
-	claims := Claim{}
+	claims := MyClaims{}
 	jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return "", errors.New("unexpected signing method")

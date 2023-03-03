@@ -48,3 +48,18 @@ func Del(key string) error {
 	ctx := context.Background()
 	return rdb.Del(ctx, key).Err()
 }
+
+func HSet(key string, value ...any) error {
+	ctx := context.Background()
+	return rdb.HSet(ctx, key, value).Err()
+}
+
+func HGet(key, field string) (string, error) {
+	ctx := context.Background()
+	return rdb.HGet(ctx, key, field).Result()
+}
+
+func HMGet(key string, fields ...string) ([]any, error) {
+	ctx := context.Background()
+	return rdb.HMGet(ctx, key, fields...).Result()
+}

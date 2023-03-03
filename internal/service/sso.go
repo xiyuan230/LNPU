@@ -1,25 +1,20 @@
 package service
 
 import (
+	"MyLNPU/internal/errs"
 	"MyLNPU/internal/log"
 	"MyLNPU/internal/utils"
-	"errors"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-const (
-	SSOLoginURl         = "https://sso.lnpu.edu.cn/login"
-	JwxtLoginUrlWithSSO = "https://sso.lnpu.edu.cn/login?service=https%3A%2F%2Fjwxt.lnpu.edu.cn%2Fjsxsd%2Fsso.jsp"
-)
-
-func SSOLogin(userName, password string) (string, error) {
+func SSOLogin(userName, password string) (*http.Client, error) {
 	client, err := utils.NewHttpClient()
 	if err != nil {
 		log.Errorf("创建HttpClient时出错... %s", err)
-		return "", err
+		return nil, err
 	}
 	ssoResp, _ := client.Get(SSOLoginURl)
 	defer ssoResp.Body.Close()
@@ -35,7 +30,7 @@ func SSOLogin(userName, password string) (string, error) {
 	values.Add("croypto", croypt)
 	values.Add("password", utils.DesECBEncrypt(password, croypt))
 	encode := values.Encode()
-	ssoLoginReq, _ := http.NewRequest("POST", "https://sso.lnpu.edu.cn/login", strings.NewReader(encode))
+	ssoLoginReq, _ := http.NewRequest("POST", SSOLoginURl, strings.NewReader(encode))
 	ssoLoginReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	ssoLoginReq.Header.Add("Host", "sso.lnpu.edu.cn")
 	ssoLoginReq.Header.Add("Origin", "https://sso.lnpu.edu.cn")
@@ -44,12 +39,11 @@ func SSOLogin(userName, password string) (string, error) {
 	ssoLoginResp, err := client.Do(ssoLoginReq)
 	if err != nil {
 		log.Errorf("统一认证登录请求失败... %s", err)
-		return "", err
+		return nil, err
 	}
 	defer ssoLoginResp.Body.Close()
 	if ssoLoginResp.Request.URL.String() == "https://sso.lnpu.edu.cn/login" {
-		return "", errors.New("账号或密码错误")
+		return nil, errs.ErrPasswordWrong
 	}
-	cookie := ssoLoginResp.Request.Header.Get("Cookie")
-	return cookie, nil
+	return client, nil
 }
