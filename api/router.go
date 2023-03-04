@@ -37,6 +37,7 @@ func jwxt(r *gin.RouterGroup) {
 	r.GET("/login", Wrapper(handles.JwxtLogin))
 	r.GET("/startDate", Wrapper(handles.GetStartDate))
 	r.GET("/score", Wrapper(handles.GetJwxtScore))
+	r.GET("/course", Wrapper(handles.GetCourseTable))
 }
 
 // WrapperHandle 全局统一错误处理
@@ -55,6 +56,9 @@ func Wrapper(handle WrapperHandle) gin.HandlerFunc {
 				return
 			case errs.ErrParamMiss:
 				common.ErrorStrResp(c, 401, "请求参数错误")
+				return
+			case errs.ErrCookieExpire:
+				common.ErrorStrResp(c, 500, "Cookie失效，请刷新")
 				return
 			default:
 				common.ErrorResp(c, 500, err)

@@ -6,4 +6,5 @@ const (
 	JwxtStudentInfoUrl  = "https://jwxt.lnpu.edu.cn/jsxsd/framework/xsMain_new.jsp"
 	JwxtCalendarUrl     = "https://jwxt.lnpu.edu.cn/jsxsd/jxzl/jxzl_query"
 	JwxtScoreUrl        = "https://jwxt.lnpu.edu.cn/jsxsd/kscj/cjcx_list"
+	JwxtCourseUrl       = "https://jwxt.lnpu.edu.cn/jsxsd/xskb/xskb_list.do"
 )

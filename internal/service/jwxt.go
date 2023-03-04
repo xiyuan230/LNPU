@@ -88,23 +88,7 @@ func GetStartDate(openid string) (int64, error) {
 	start, err := cache.Get("lnpu:jwxt:startDate")
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			cookie, err := UpdateCookie(openid)
-			if err != nil {
-				return 0, err
-			}
-			client, err := utils.NewHttpClient()
-			if err != nil {
-				log.Errorf("创建HttpClient失败... %s", err)
-				return 0, err
-			}
-			req, _ := http.NewRequest("GET", JwxtCalendarUrl, nil)
-			req.Header.Add("Cookie", cookie)
-			resp, err := client.Do(req)
-			if err != nil {
-				return 0, err
-			}
-			defer resp.Body.Close()
-			doc, err := goquery.NewDocumentFromReader(resp.Body)
+			doc, err := ParsePage(openid, JwxtCalendarUrl)
 			if err != nil {
 				return 0, err
 			}
@@ -130,26 +114,16 @@ func GetJwxtScore(openid string) (*model.ScoreResult, error) {
 	data, err := cache.Get("lnpu:jwxt:score:" + openid)
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			cookie, err := UpdateCookie(openid)
-			if err != nil {
-				return nil, err
-			}
-			client, err := utils.NewHttpClient()
-			if err != nil {
-				return nil, err
-			}
-			req, _ := http.NewRequest("GET", JwxtScoreUrl, nil)
-			req.Header.Add("Cookie", cookie)
-			resp, err := client.Do(req)
-			if err != nil {
-				return nil, err
-			}
-			doc, err := goquery.NewDocumentFromReader(resp.Body)
+			doc, err := ParsePage(openid, JwxtScoreUrl)
 			if err != nil {
 				return nil, err
 			}
 			listNode := doc.Find(".Nsb_r_list").Children().Children()
 			length := listNode.Length()
+			if length == 0 {
+				cache.Del("lnpu:jwxt:cookie:" + openid)
+				return nil, errs.ErrCookieExpire
+			}
 			scoreList := make([]model.Score, length-1)
 			for i := 1; i < length; i++ {
 				score := model.Score{}
@@ -193,6 +167,67 @@ func GetJwxtScore(openid string) (*model.ScoreResult, error) {
 	return &scoreResult, nil
 }
 
+func GetCourseTable(openid string) (*[]model.Course, error) {
+	data, err := cache.Get("lnpu:jwxt:course:" + openid)
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			doc, err := ParsePage(openid, JwxtCourseUrl)
+			if err != nil {
+				return nil, err
+			}
+			var courseList []model.Course
+			courseNode := doc.Find("#kbtable tr")
+			if courseNode.Length() == 0 {
+				cache.Del("lnpu:jwxt:cookie:" + openid)
+				return nil, errs.ErrCookieExpire
+			}
+			courseNode.Find("th").Remove()
+			courseNode.Find("input").Remove()
+			courseNode.Find(".kbcontent1").Remove()
+			courseNode.Find(".sykb1").Remove()
+			courseNode.Find(".sykb2").Remove()
+			for i := 1; i <= 6; i++ {
+				section := i
+				courseNode.Eq(i).Children().Each(func(j int, selection *goquery.Selection) {
+					week := j + 1
+					if ok, _ := regexp.MatchString("[\u4e00-\u9fa5]", selection.Text()); ok {
+						kbcontent := selection.Find(".kbcontent").Eq(0)
+						count := kbcontent.Children().Length()
+						if count > 7 {
+							for k := 0; k < count/7; k++ {
+								course := model.Course{}
+								course.CourseName = kbcontent.Contents().Eq(0 + k*10).Text()
+								course.Address = kbcontent.Find("[title='教室']").Eq(k).Text()
+								course.Teacher = kbcontent.Find("[title='老师']").Eq(k).Text()
+								course.WeekList = utils.CourseWeekListHandle(kbcontent.Find("[title='周次(节次)']").Eq(k).Text())
+								course.Week = week
+								course.Sections = section
+								courseList = append(courseList, course)
+							}
+						} else {
+							course := model.Course{}
+							course.CourseName = kbcontent.Contents().Eq(0).Text()
+							course.Address = kbcontent.Find("[title='教室']").Eq(0).Text()
+							course.Teacher = kbcontent.Find("[title='老师']").Eq(0).Text()
+							course.WeekList = utils.CourseWeekListHandle(kbcontent.Find("[title='周次(节次)']").Eq(0).Text())
+							course.Week = week
+							course.Sections = section
+							courseList = append(courseList, course)
+						}
+					}
+				})
+			}
+			marshal, _ := json.Marshal(courseList)
+			cache.Set("lnpu:jwxt:course:"+openid, marshal, time.Hour*12)
+			return &courseList, nil
+		}
+		return nil, err
+	}
+	var courseTable []model.Course
+	json.Unmarshal([]byte(data), &courseTable)
+	return &courseTable, nil
+}
+
 // UpdateCookie 更新cookie
 func UpdateCookie(openid string) (string, error) {
 	cookie, err := cache.Get("lnpu:jwxt:cookie:" + openid)
@@ -207,4 +242,28 @@ func UpdateCookie(openid string) (string, error) {
 		return "", err
 	}
 	return cookie, nil
+}
+
+func ParsePage(openid, url string) (*goquery.Document, error) {
+	cookie, err := UpdateCookie(openid)
+	if err != nil {
+		return nil, err
+	}
+	client, err := utils.NewHttpClient()
+	if err != nil {
+		log.Errorf("创建HttpClient失败... %s", err)
+		return nil, err
+	}
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Cookie", cookie)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
 }

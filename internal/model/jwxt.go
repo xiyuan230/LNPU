@@ -25,3 +25,12 @@ type ScoreResult struct {
 	AverageGrade       string  `json:"average_grade"`
 	Rank               string  `json:"rank"`
 }
+
+type Course struct {
+	CourseName string `json:"course_name"`
+	WeekList   []int  `json:"week_list"`
+	Week       int    `json:"week"`
+	Address    string `json:"address"`
+	Teacher    string `json:"teacher"`
+	Sections   int    `json:"sections"`
+}

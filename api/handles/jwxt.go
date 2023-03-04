@@ -54,5 +54,19 @@ func GetJwxtScore(c *gin.Context) (any, error) {
 		log.Errorf("获取成绩信息失败... %s", err)
 		return nil, err
 	}
-	return map[string]any{"scoreList": score}, nil
+	return map[string]any{"score": score}, nil
+}
+
+func GetCourseTable(c *gin.Context) (any, error) {
+	token := c.GetHeader("Authorization")
+	openid, err := utils.JWTParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+	courseTable, err := service.GetCourseTable(openid)
+	if err != nil {
+		log.Errorf("获取课表失败... %s", err)
+		return nil, err
+	}
+	return map[string]any{"course_table": courseTable}, nil
 }
