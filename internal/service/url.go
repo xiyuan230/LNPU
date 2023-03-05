@@ -7,4 +7,6 @@ const (
 	JwxtCalendarUrl     = "https://jwxt.lnpu.edu.cn/jsxsd/jxzl/jxzl_query"
 	JwxtScoreUrl        = "https://jwxt.lnpu.edu.cn/jsxsd/kscj/cjcx_list"
 	JwxtCourseUrl       = "https://jwxt.lnpu.edu.cn/jsxsd/xskb/xskb_list.do"
+	ExpLoginUrl         = "http://202.118.120.108/login"
+	ExpTableUrl         = "http://202.118.120.108/student/stutimetable/list"
 )

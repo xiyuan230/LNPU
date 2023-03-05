@@ -1,7 +1,5 @@
 package model
 
-import "MyLNPU/internal/cache"
-
 const (
 	GUEST = iota
 	ADMIN
@@ -19,8 +17,4 @@ type User struct {
 
 func (u *User) IsAdmin() bool {
 	return u.Role == ADMIN
-}
-
-func (u *User) CacheUser() error {
-	return cache.HSet("lnpu:user:"+u.OpenID, "student_id", u.StudentID, "sso_password", u.SSOPassword, "exp_password", u.ExpPassword, "role", u.Role)
 }

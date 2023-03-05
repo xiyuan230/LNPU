@@ -14,6 +14,7 @@ func Init(e *gin.Engine) {
 	admin(e.Group("/admin")) //管理路由
 	other(e.Group("/other"))
 	jwxt(e.Group("/jwxt"))
+	experiment(e.Group("/experiment"))
 	log.Println("router初始化成功...")
 }
 
@@ -38,6 +39,9 @@ func jwxt(r *gin.RouterGroup) {
 	r.GET("/startDate", Wrapper(handles.GetStartDate))
 	r.GET("/score", Wrapper(handles.GetJwxtScore))
 	r.GET("/course", Wrapper(handles.GetCourseTable))
+}
+func experiment(r *gin.RouterGroup) {
+	r.GET("/table", Wrapper(handles.GetExpTable))
 }
 
 // WrapperHandle 全局统一错误处理

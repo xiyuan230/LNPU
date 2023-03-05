@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,4 +38,11 @@ func CourseWeekListHandle(str string) []int {
 	}
 	week, _ := strconv.Atoi(split)
 	return append(result, week)
+}
+
+func ExpTableWeekHandle(str string) string {
+	regexp.MatchString("[1-9]*[\u4e00-\u9fa5]", str)
+	compile, _ := regexp.Compile("[1-9]*[\u4e00-\u9fa5]+")
+	findString := compile.FindAllString(str, -1)
+	return fmt.Sprintf("%s %s", findString[0], findString[1])
 }

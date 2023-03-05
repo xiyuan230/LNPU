@@ -158,6 +158,7 @@ func GetJwxtScore(openid string) (*model.ScoreResult, error) {
 			result.Rank = utils.ScoreStrHandle(split[4])
 			marshal, _ := json.Marshal(result)
 			cache.Set("lnpu:jwxt:score:"+openid, marshal, time.Hour*2)
+			log.Println("获取成绩信息成功[%s]", openid)
 			return &result, nil
 		}
 		return nil, err
@@ -217,6 +218,7 @@ func GetCourseTable(openid string) (*[]model.Course, error) {
 					}
 				})
 			}
+			log.Println("获取课程信息成功[%s]", openid)
 			marshal, _ := json.Marshal(courseList)
 			cache.Set("lnpu:jwxt:course:"+openid, marshal, time.Hour*12)
 			return &courseList, nil
