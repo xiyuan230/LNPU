@@ -8,8 +8,10 @@ import (
 )
 
 func TrimSpace(str string) string {
-	str = strings.Replace(str, " ", "", -1)
-	str = strings.Replace(str, "\n", "", -1)
+	str = strings.ReplaceAll(str, " ", "")
+	str = strings.ReplaceAll(str, "\n", "")
+	str = strings.ReplaceAll(str, "\t", "")
+	str = strings.ReplaceAll(str, " ", "")
 	return str
 }
 

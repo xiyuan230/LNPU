@@ -39,6 +39,7 @@ func jwxt(r *gin.RouterGroup) {
 	r.GET("/startDate", Wrapper(handles.GetStartDate))
 	r.GET("/score", Wrapper(handles.GetJwxtScore))
 	r.GET("/course", Wrapper(handles.GetCourseTable))
+	r.GET("/training", Wrapper(handles.GetTrainingTable))
 }
 func experiment(r *gin.RouterGroup) {
 	r.GET("/table", Wrapper(handles.GetExpTable))

@@ -40,6 +40,7 @@ func GetStartDate(c *gin.Context) (any, error) {
 		log.Errorf("获取学期起始日期失败... %s", err)
 		return nil, err
 	}
+	log.Println("获取学期起始日期成功 [%s]", openid)
 	return map[string]any{"start_date": startDate}, nil
 }
 
@@ -54,6 +55,7 @@ func GetJwxtScore(c *gin.Context) (any, error) {
 		log.Errorf("获取成绩信息失败... %s", err)
 		return nil, err
 	}
+	log.Println("获取成绩信息成功 [%s]", openid)
 	return map[string]any{"score": score}, nil
 }
 
@@ -68,5 +70,21 @@ func GetCourseTable(c *gin.Context) (any, error) {
 		log.Errorf("获取课表失败... %s", err)
 		return nil, err
 	}
+	log.Println("获取课表信息成功 [%s]", openid)
 	return map[string]any{"course_table": courseTable}, nil
+}
+
+func GetTrainingTable(c *gin.Context) (any, error) {
+	token := c.GetHeader("Authorization")
+	openid, err := utils.JWTParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+	table, err := service.GetTrainingTable(openid)
+	if err != nil {
+		log.Errorf("获取培养方案信息失败... %s", err)
+		return nil, err
+	}
+	log.Println("获取培养方案信息成功 [%s]", openid)
+	return map[string]any{"training_table": table}, nil
 }

@@ -230,6 +230,98 @@ func GetCourseTable(openid string) (*[]model.Course, error) {
 	return &courseTable, nil
 }
 
+func GetTrainingTable(openid string) (*[]model.CourseDetail, error) {
+	data, err := cache.Get("lnpu:jwxt:training:" + openid)
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			doc, err := ParsePage(openid, JwxtTrainingTableUrl)
+			if err != nil {
+				return nil, err
+			}
+			doc.Find("[colspan='7']").Parent().Remove()
+			doc.Find("TR").Last().Remove()
+			course := doc.Find("#mxh tr")
+			index := 0
+			var table []model.CourseDetail
+			for i := 2; i < course.Length(); i++ {
+				detail := model.CourseDetail{}
+				if course.Eq(i).Children().Length() == 14 {
+					index = i
+					detail.Type = utils.TrimSpace(course.Eq(i).Children().Eq(0).Text())
+					detail.CourseName = utils.TrimSpace(course.Eq(i).Children().Eq(3).Text())
+					if utils.TrimSpace(course.Eq(i).Children().Eq(4).Text()) == "" {
+						detail.Status = "未开始"
+					} else {
+						detail.Status = utils.TrimSpace(course.Eq(i).Children().Eq(4).Text())
+					}
+					detail.Attribute = utils.TrimSpace(course.Eq(i).Children().Eq(6).Text())
+					detail.Credit = utils.TrimSpace(course.Eq(i).Children().Eq(7).Text())
+					detail.CreditHours = utils.TrimSpace(course.Eq(i).Children().Eq(12).Text())
+					var term string
+					switch utils.TrimSpace(course.Eq(i).Children().Eq(12).Text()) {
+					case "1":
+						term = "大一上"
+					case "2":
+						term = "大一下"
+					case "3":
+						term = "大二上"
+					case "4":
+						term = "大二下"
+					case "5":
+						term = "大三上"
+					case "6":
+						term = "大三下"
+					case "7":
+						term = "大四上"
+					case "8":
+						term = "大四下"
+					}
+					detail.Term = term
+				} else {
+					detail.Type = utils.TrimSpace(course.Eq(index).Children().Eq(0).Text())
+					detail.CourseName = utils.TrimSpace(course.Eq(i).Children().Eq(2).Text())
+					if utils.TrimSpace(course.Eq(i).Children().Eq(3).Text()) == "" {
+						detail.Status = "未开始"
+					} else {
+						detail.Status = utils.TrimSpace(course.Eq(i).Children().Eq(3).Text())
+					}
+					detail.Attribute = utils.TrimSpace(course.Eq(i).Children().Eq(5).Text())
+					detail.Credit = utils.TrimSpace(course.Eq(i).Children().Eq(6).Text())
+					detail.CreditHours = utils.TrimSpace(course.Eq(i).Children().Eq(11).Text())
+					var term string
+					switch utils.TrimSpace(course.Eq(i).Children().Eq(12).Text()) {
+					case "1":
+						term = "大一上"
+					case "2":
+						term = "大一下"
+					case "3":
+						term = "大二上"
+					case "4":
+						term = "大二下"
+					case "5":
+						term = "大三上"
+					case "6":
+						term = "大三下"
+					case "7":
+						term = "大四上"
+					case "8":
+						term = "大四下"
+					}
+					detail.Term = term
+				}
+				table = append(table, detail)
+			}
+			marshal, _ := json.Marshal(table)
+			cache.Set("lnpu:jwxt:training:"+openid, marshal, time.Hour*24)
+			return &table, nil
+		}
+		return nil, err
+	}
+	var table []model.CourseDetail
+	json.Unmarshal([]byte(data), &table)
+	return &table, nil
+}
+
 // UpdateCookie 更新cookie
 func UpdateCookie(openid string) (string, error) {
 	cookie, err := cache.Get("lnpu:jwxt:cookie:" + openid)

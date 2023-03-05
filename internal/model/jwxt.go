@@ -34,3 +34,13 @@ type Course struct {
 	Teacher    string `json:"teacher"`
 	Sections   int    `json:"sections"`
 }
+
+type CourseDetail struct {
+	Type        string `json:"type"`
+	CourseName  string `json:"course_name"`
+	Status      string `json:"status"`
+	Attribute   string `json:"attribute"`
+	Credit      string `json:"credit"`
+	CreditHours string `json:"credit_hours"`
+	Term        string `json:"term"`
+}

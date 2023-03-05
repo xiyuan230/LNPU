@@ -18,6 +18,7 @@ func GetExpTable(c *gin.Context) (any, error) {
 		log.Errorf("获取实验课程信息失败... %s", err)
 		return nil, err
 	}
+	log.Println("获取实验课程信息成功 [%s]", openid)
 	return map[string]any{"table": table}, nil
 
 }
