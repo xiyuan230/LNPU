@@ -16,7 +16,10 @@ func SSOLogin(userName, password string) (*http.Client, error) {
 		logger.Errorf("创建HttpClient时出错... %s", err)
 		return nil, err
 	}
-	ssoResp, _ := client.Get(SSOLoginURl)
+	ssoResp, err := client.Get(SSOLoginURl)
+	if err != nil {
+		return nil, err
+	}
 	defer ssoResp.Body.Close()
 	doc, _ := goquery.NewDocumentFromReader(ssoResp.Body)
 	croypt := doc.Find("#login-croypto").First().Text()
