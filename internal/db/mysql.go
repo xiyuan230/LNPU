@@ -2,7 +2,7 @@ package db
 
 import (
 	"MyLNPU/conf"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"MyLNPU/internal/model"
 	"fmt"
 	"gorm.io/driver/mysql"
@@ -25,12 +25,12 @@ func Init() {
 	}), &gorm.Config{})
 
 	if err != nil {
-		log.Errorf("数据库连接失败... ERROR: %s", err)
+		logger.Errorf("数据库连接失败... ERROR: %s", err)
 		os.Exit(-1)
 	}
 	db.AutoMigrate(&model.User{}, &model.Notice{})
 	defaultData()
-	log.Println("mysql初始化成功...")
+	logger.Println("mysql初始化成功...")
 }
 
 func GetDB() *gorm.DB {

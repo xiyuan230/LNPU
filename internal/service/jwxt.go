@@ -4,7 +4,7 @@ import (
 	"MyLNPU/internal/cache"
 	"MyLNPU/internal/db"
 	"MyLNPU/internal/errs"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"MyLNPU/internal/model"
 	"MyLNPU/internal/utils"
 	"encoding/json"
@@ -23,7 +23,7 @@ func JwxtLogin(openid string) (string, error) {
 	cache.Del("lnpu:jwxt:cookie:" + openid)
 	user, err := db.GetUserByID(openid)
 	if err != nil {
-		log.Errorf("获取用户信息失败... %s", err)
+		logger.Errorf("获取用户信息失败... %s", err)
 		return "", err
 	}
 	if user.StudentID == "" || user.SSOPassword == "" {
@@ -31,12 +31,12 @@ func JwxtLogin(openid string) (string, error) {
 	}
 	client, err := SSOLogin(user.StudentID, user.SSOPassword)
 	if err != nil {
-		log.Errorf("统一认证登录失败... %s", err)
+		logger.Errorf("统一认证登录失败... %s", err)
 		return "", err
 	}
 	resp, err := client.Get(JwxtLoginUrlWithSSO)
 	if err != nil {
-		log.Errorf("教务系统登录失败.... %s", resp)
+		logger.Errorf("教务系统登录失败.... %s", resp)
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -54,20 +54,20 @@ func GetStudentInfo(openid string) (*model.Student, error) {
 	}
 	client, err := utils.NewHttpClient()
 	if err != nil {
-		log.Errorf("创建HttpClient对象失败... %s", err)
+		logger.Errorf("创建HttpClient对象失败... %s", err)
 		return nil, err
 	}
 	req, _ := http.NewRequest("GET", JwxtStudentInfoUrl, nil)
 	req.Header.Add("Cookie", cookie)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Errorf("获取学生信息失败... %s", err)
+		logger.Errorf("获取学生信息失败... %s", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		log.Errorf("学生信息页解析失败... %s", err)
+		logger.Errorf("学生信息页解析失败... %s", err)
 		return nil, err
 	}
 	infoNode := doc.Find(".middletopdwxxcont")
@@ -79,7 +79,7 @@ func GetStudentInfo(openid string) (*model.Student, error) {
 	stu.College = infoNode.Eq(3).Text()
 	stu.Major = infoNode.Eq(4).Text()
 	stu.Class = infoNode.Eq(5).Text()
-	log.Println("获取学生信息[ %s ]成功", stu.Name)
+	logger.Println("获取学生信息[ %s ]成功", stu.Name)
 	fmt.Println(cookie)
 	return &stu, nil
 }
@@ -95,7 +95,7 @@ func GetStartDate(openid string) (int64, error) {
 			attr, _ := doc.Find("#kbtable tr").Eq(1).Children().Eq(1).Attr("title")
 			startDate, err := time.Parse("2006年01月02", attr)
 			if err != nil {
-				log.Errorf("学期起始日期格式化失败... %s", err)
+				logger.Errorf("学期起始日期格式化失败... %s", err)
 				return 0, err
 			}
 			cache.Set("lnpu:jwxt:startDate", startDate.Unix(), time.Hour*24)
@@ -158,7 +158,6 @@ func GetJwxtScore(openid string) (*model.ScoreResult, error) {
 			result.Rank = utils.ScoreStrHandle(split[4])
 			marshal, _ := json.Marshal(result)
 			cache.Set("lnpu:jwxt:score:"+openid, marshal, time.Hour*2)
-			log.Println("获取成绩信息成功[%s]", openid)
 			return &result, nil
 		}
 		return nil, err
@@ -218,7 +217,6 @@ func GetCourseTable(openid string) (*[]model.Course, error) {
 					}
 				})
 			}
-			log.Println("获取课程信息成功[%s]", openid)
 			marshal, _ := json.Marshal(courseList)
 			cache.Set("lnpu:jwxt:course:"+openid, marshal, time.Hour*12)
 			return &courseList, nil
@@ -345,7 +343,7 @@ func ParsePage(openid, url string) (*goquery.Document, error) {
 	}
 	client, err := utils.NewHttpClient()
 	if err != nil {
-		log.Errorf("创建HttpClient失败... %s", err)
+		logger.Errorf("创建HttpClient失败... %s", err)
 		return nil, err
 	}
 	req, _ := http.NewRequest("GET", url, nil)

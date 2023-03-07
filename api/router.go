@@ -5,7 +5,7 @@ import (
 	"MyLNPU/api/handles"
 	"MyLNPU/api/middlewares"
 	"MyLNPU/internal/errs"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func Init(e *gin.Engine) {
 	other(e.Group("/other"))
 	jwxt(e.Group("/jwxt"))
 	experiment(e.Group("/experiment"))
-	log.Println("router初始化成功...")
+	logger.Println("router初始化成功...")
 }
 
 func auth(r *gin.RouterGroup) {

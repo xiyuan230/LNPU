@@ -4,7 +4,7 @@ import (
 	"MyLNPU/internal/cache"
 	"MyLNPU/internal/db"
 	"MyLNPU/internal/errs"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"MyLNPU/internal/model"
 	"MyLNPU/internal/utils"
 	"encoding/json"
@@ -23,7 +23,7 @@ func ExpLogin(openid string) (string, error) {
 	cache.Del("lnpu:exp:cookie:" + openid)
 	user, err := db.GetUserByID(openid)
 	if err != nil {
-		log.Errorf("获取用户信息失败... %s", err)
+		logger.Errorf("获取用户信息失败... %s", err)
 		return "", err
 	}
 	if user.StudentID == "" || user.ExpPassword == "" {
@@ -31,7 +31,7 @@ func ExpLogin(openid string) (string, error) {
 	}
 	client, err := utils.NewHttpClient()
 	if err != nil {
-		log.Errorf("创建HttpClient失败... %s", err)
+		logger.Errorf("创建HttpClient失败... %s", err)
 		return "", err
 	}
 	values := url.Values{}
@@ -61,12 +61,12 @@ func GetExpTable(openid string) (*[]model.Experiment, error) {
 		if errors.Is(err, redis.Nil) {
 			cookie, err := UpdateExpCookie(openid)
 			if err != nil {
-				log.Errorf("登录实践教学平台失败... %s", err)
+				logger.Errorf("登录实践教学平台失败... %s", err)
 				return nil, err
 			}
 			client, err := utils.NewHttpClient()
 			if err != nil {
-				log.Errorf("创建HttpClient失败... %s", err)
+				logger.Errorf("创建HttpClient失败... %s", err)
 				return nil, err
 			}
 			page := 1
@@ -78,13 +78,13 @@ func GetExpTable(openid string) (*[]model.Experiment, error) {
 				if err != nil {
 					return nil, err
 				}
-				log.Println("正在访问实验列表第%d页", page)
+				logger.Println("正在访问实验列表第%d页", page)
 				doc, _ := goquery.NewDocumentFromReader(resp.Body)
 				if doc.Find(".links").Length() > 0 {
 					return nil, errs.ErrCookieExpire
 				}
 				if strings.Contains(doc.Find("img[src='images/nomsg.png']").Parent().Text(), "目前没有数据") {
-					log.Println("此页为空")
+					logger.Println("此页为空")
 					break
 				}
 				courseArea := doc.Find(".page_course_area")

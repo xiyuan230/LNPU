@@ -2,7 +2,7 @@ package service
 
 import (
 	"MyLNPU/internal/errs"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"MyLNPU/internal/utils"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
@@ -13,7 +13,7 @@ import (
 func SSOLogin(userName, password string) (*http.Client, error) {
 	client, err := utils.NewHttpClient()
 	if err != nil {
-		log.Errorf("创建HttpClient时出错... %s", err)
+		logger.Errorf("创建HttpClient时出错... %s", err)
 		return nil, err
 	}
 	ssoResp, _ := client.Get(SSOLoginURl)
@@ -38,7 +38,7 @@ func SSOLogin(userName, password string) (*http.Client, error) {
 	ssoLoginReq.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36")
 	ssoLoginResp, err := client.Do(ssoLoginReq)
 	if err != nil {
-		log.Errorf("统一认证登录请求失败... %s", err)
+		logger.Errorf("统一认证登录请求失败... %s", err)
 		return nil, err
 	}
 	defer ssoLoginResp.Body.Close()

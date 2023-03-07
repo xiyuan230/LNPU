@@ -1,7 +1,7 @@
 package handles
 
 import (
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"MyLNPU/internal/service"
 	"MyLNPU/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -15,10 +15,10 @@ func GetExpTable(c *gin.Context) (any, error) {
 	}
 	table, err := service.GetExpTable(openid)
 	if err != nil {
-		log.Errorf("获取实验课程信息失败... %s", err)
+		logger.Errorf("获取实验课程信息失败... %s", err)
 		return nil, err
 	}
-	log.Println("获取实验课程信息成功 [%s]", openid)
+	logger.Println("获取实验课程信息成功 [%s]", openid)
 	return map[string]any{"table": table}, nil
 
 }

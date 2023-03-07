@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 )
 
@@ -51,17 +52,17 @@ func Init() {
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("读取配置文件失败... ERROR: %s\n", err)
+		log.Printf("读取配置文件失败... ERROR: %s\n", err)
 		os.Exit(-1)
 	}
 	err = viper.Unmarshal(&config)
 	if err != nil {
-		fmt.Printf("配置文件解析失败... ERROR: %s\n", err)
+		log.Printf("配置文件解析失败... ERROR: %s\n", err)
 		os.Exit(-1)
 	}
 	viper.WatchConfig()
 	printBanner()
-	fmt.Println("配置文件读取成功...")
+	log.Println("配置文件读取成功...")
 }
 
 func GetConfig() ApplicationConfig {

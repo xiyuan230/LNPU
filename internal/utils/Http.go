@@ -2,7 +2,7 @@ package utils
 
 import (
 	"MyLNPU/conf"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"golang.org/x/net/proxy"
 	"net/http"
 	"net/http/cookiejar"
@@ -17,7 +17,7 @@ func NewHttpClient() (*http.Client, error) {
 	if Enable {
 		socks5, err := proxy.SOCKS5("tcp", ProxyUrl, nil, proxy.Direct)
 		if err != nil {
-			log.Errorf("无法连接到代理服务器... %s", err)
+			logger.Errorf("无法连接到代理服务器... %s", err)
 			return nil, err
 		}
 		jar, _ := cookiejar.New(nil)

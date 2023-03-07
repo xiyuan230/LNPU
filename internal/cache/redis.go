@@ -2,7 +2,7 @@ package cache
 
 import (
 	"MyLNPU/conf"
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"context"
 	"github.com/redis/go-redis/v9"
 	"os"
@@ -24,10 +24,10 @@ func Init() {
 	})
 	_, err := rdb.Ping(ctx).Result()
 	if err != nil {
-		log.Errorf("redis初始化出错... ERROR: %s", err)
+		logger.Errorf("redis初始化出错... ERROR: %s", err)
 		os.Exit(-1)
 	}
-	log.Println("redis初始化成功...")
+	logger.Println("redis初始化成功...")
 }
 
 func GetRDB() *redis.Client {

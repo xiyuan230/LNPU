@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
@@ -24,7 +24,7 @@ func JWTNewToken(openid string) (string, error) {
 	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(signKey)
 	if err != nil {
-		log.Errorf("Token签发失败... %s", err)
+		logger.Errorf("Token签发失败... %s", err)
 		return "", err
 	}
 	return token, nil

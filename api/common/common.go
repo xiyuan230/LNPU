@@ -1,7 +1,7 @@
 package common
 
 import (
-	"MyLNPU/internal/log"
+	"MyLNPU/internal/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +27,7 @@ func ErrorResp(c *gin.Context, code int, err error) {
 		Message: err.Error(),
 		Data:    nil,
 	})
-	log.Errorf(err.Error())
+	logger.Errorf(err.Error())
 	c.Abort()
 }
 
@@ -37,6 +37,6 @@ func ErrorStrResp(c *gin.Context, code int, str string) {
 		Message: str,
 		Data:    nil,
 	})
-	log.Errorf(str+" Path: %s IP: %s", c.FullPath(), c.ClientIP())
+	logger.Errorf(str+" Path: %s IP: %s", c.FullPath(), c.ClientIP())
 	c.Abort()
 }
