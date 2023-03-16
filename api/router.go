@@ -35,7 +35,8 @@ func other(r *gin.RouterGroup) {
 
 func jwxt(r *gin.RouterGroup) {
 	r.Use(middlewares.AuthorizationWithToken)
-	r.GET("/login", Wrapper(handles.JwxtLogin))
+	r.GET("/jwxtLogin", Wrapper(handles.JwxtLoginWithJwxt))
+	r.GET("/ssoLogin", Wrapper(handles.JwxtLoginWithSSO))
 	r.GET("/startDate", Wrapper(handles.GetStartDate))
 	r.GET("/score", Wrapper(handles.GetJwxtScore))
 	r.GET("/course", Wrapper(handles.GetCourseTable))

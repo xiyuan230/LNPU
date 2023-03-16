@@ -12,14 +12,17 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/redis/go-redis/v9"
+	"image"
+	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-func JwxtLogin(openid string) (string, error) {
+func JwxtLoginWithSSO(openid string) (string, error) {
 	cache.Del("lnpu:jwxt:cookie:" + openid)
 	user, err := db.GetUserByID(openid)
 	if err != nil {
@@ -29,7 +32,7 @@ func JwxtLogin(openid string) (string, error) {
 	if user.StudentID == "" || user.SSOPassword == "" {
 		return "", errs.ErrUserEmpty
 	}
-	client, err := SSOLogin(user.StudentID, user.SSOPassword)
+	client, err := loginWithSSO(user.StudentID, user.SSOPassword)
 	if err != nil {
 		logger.Errorf("统一认证登录失败... %s", err)
 		return "", err
@@ -43,6 +46,52 @@ func JwxtLogin(openid string) (string, error) {
 	cookie := resp.Request.Header.Get("Cookie")
 	cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
 	return cookie, nil
+}
+
+func JwxtLoginWithJwxt(openid string) (string, error) {
+	cache.Del("lnpu:jwxt:cookie:" + openid)
+	user, err := db.GetUserByID(openid)
+	if err != nil {
+		logger.Errorf("获取用户信息失败... %s", err)
+		return "", err
+	}
+	if user.StudentID == "" || user.JwxtPassword == "" {
+		return "", errs.ErrUserEmpty
+	}
+	for i := 0; i < 3; i++ {
+		code, client, err := utils.GetVerifyCode(JwxtVerifyCodeUrl)
+		if err != nil {
+			if errors.Is(err, image.ErrFormat) {
+				continue
+			}
+			return "", err
+		}
+		encode := utils.EncodeByBase64(user.StudentID, user.JwxtPassword)
+		values := url.Values{}
+		values.Add("RANDOMCODE", code)
+		values.Add("encoded", encode)
+		values.Add("userAccount", "")
+		payload := values.Encode()
+		request, _ := http.NewRequest("POST", "https://jwxt.lnpu.edu.cn/jsxsd/xk/LoginToXk", strings.NewReader(payload))
+		request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		response, err := client.Do(request)
+		if err != nil {
+			logger.Println("教务系统登录失败...")
+			continue
+		}
+		body, _ := io.ReadAll(response.Body)
+		if strings.Contains(string(body), "密码错误") {
+			return "", errs.ErrPasswordWrong
+		} else if strings.Contains(string(body), "验证码错误") {
+			logger.Println("验证码错误...")
+			continue
+		}
+		cookies := response.Request.Header.Values("Cookie")
+		cookie := strings.Join(cookies, "")
+		cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
+		return cookie, nil
+	}
+	return "", errs.ErrJwxtLoginFailed
 }
 
 // GetStudentInfo 获取学生信息
@@ -325,8 +374,15 @@ func UpdateCookie(openid string) (string, error) {
 	cookie, err := cache.Get("lnpu:jwxt:cookie:" + openid)
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			login, err := JwxtLogin(openid)
+			login, err := JwxtLoginWithSSO(openid)
 			if err != nil {
+				if errors.Is(err, errs.ErrUserEmpty) {
+					login, err := JwxtLoginWithJwxt(openid)
+					if err != nil {
+						return "", err
+					}
+					return login, nil
+				}
 				return "", err
 			}
 			return login, nil

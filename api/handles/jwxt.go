@@ -9,13 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JwxtLogin(c *gin.Context) (any, error) {
+func JwxtLoginWithSSO(c *gin.Context) (any, error) {
 	token := c.GetHeader("Authorization")
 	openid, err := utils.JWTParseToken(token)
 	if err != nil {
 		return nil, err
 	}
-	_, err = service.JwxtLogin(openid)
+	_, err = service.JwxtLoginWithSSO(openid)
 	if err != nil {
 		if errors.Is(err, errs.ErrPasswordWrong) {
 			return nil, err
@@ -28,7 +28,18 @@ func JwxtLogin(c *gin.Context) (any, error) {
 	}
 	return map[string]any{"student_info": stu}, err
 }
-
+func JwxtLoginWithJwxt(c *gin.Context) (any, error) {
+	token := c.GetHeader("Authorization")
+	openid, err := utils.JWTParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+	_, err = service.JwxtLoginWithJwxt(openid)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"cookie": "success"}, nil
+}
 func GetStartDate(c *gin.Context) (any, error) {
 	token := c.GetHeader("Authorization")
 	openid, err := utils.JWTParseToken(token)

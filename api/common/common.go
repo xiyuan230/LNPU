@@ -37,6 +37,6 @@ func ErrorStrResp(c *gin.Context, code int, str string) {
 		Message: str,
 		Data:    nil,
 	})
-	logger.Errorf(str+" Path: %s IP: %s", c.FullPath(), c.ClientIP())
+	logger.Errorf(str+" Path: %s IP: %s", c.Request.URL, c.ClientIP())
 	c.Abort()
 }
