@@ -54,7 +54,24 @@ func Login(code string) (string, error) {
 	return token, nil
 }
 
+func UpdateUser(user *model.User) error {
+	clearCache(user.OpenID)
+	err := db.UpdateUser(user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func CheckTokenExpiration(token string) bool {
 	isExpiration := utils.CheckTokenStatus(token)
 	return isExpiration
+}
+
+func clearCache(openid string) {
+	cache.Del("lnpu:exp:cookie:" + openid)
+	cache.Del("lnpu:exp:table:" + openid)
+	cache.Del("lnpu:jwxt:cookie:" + openid)
+	cache.Del("lnpu:jwxt:score:" + openid)
+	cache.Del("lnpu:jwxt:course:" + openid)
+	cache.Del("lnpu:jwxt:training:" + openid)
 }

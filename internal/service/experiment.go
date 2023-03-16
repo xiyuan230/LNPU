@@ -29,14 +29,22 @@ func ExpLogin(openid string) (string, error) {
 	if user.StudentID == "" || user.ExpPassword == "" {
 		return "", errs.ErrUserEmpty
 	}
+	cookie, err := ExpLoginBind(user.StudentID, user.ExpPassword)
+	if err != nil {
+		return "", err
+	}
+	cache.Set("lnpu:exp:cookie:"+openid, cookie, time.Hour*2)
+	return cookie, nil
+}
+func ExpLoginBind(userName, password string) (string, error) {
 	client, err := utils.NewHttpClient()
 	if err != nil {
 		logger.Errorf("创建HttpClient失败... %s", err)
 		return "", err
 	}
 	values := url.Values{}
-	values.Add("teaId", user.StudentID)
-	values.Add("teaPwd", user.ExpPassword)
+	values.Add("teaId", userName)
+	values.Add("teaPwd", password)
 	encode := values.Encode()
 	req, _ := http.NewRequest("POST", ExpLoginUrl, strings.NewReader(encode))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -48,13 +56,11 @@ func ExpLogin(openid string) (string, error) {
 	all, _ := io.ReadAll(resp.Body)
 	if strings.Contains(string(all), "succ") {
 		cookie := resp.Header.Get("Set-Cookie")
-		cache.Set("lnpu:exp:cookie:"+openid, cookie, time.Hour*2)
 		return cookie, nil
 	} else {
 		return "", errs.ErrPasswordWrong
 	}
 }
-
 func GetExpTable(openid string) (*[]model.Experiment, error) {
 	data, err := cache.Get("lnpu:exp:table:" + openid)
 	if err != nil {

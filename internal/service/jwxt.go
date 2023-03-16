@@ -22,6 +22,7 @@ import (
 	"time"
 )
 
+// JwxtLoginWithSSO  教务系统统一认证登录/**
 func JwxtLoginWithSSO(openid string) (string, error) {
 	cache.Del("lnpu:jwxt:cookie:" + openid)
 	user, err := db.GetUserByID(openid)
@@ -32,7 +33,16 @@ func JwxtLoginWithSSO(openid string) (string, error) {
 	if user.StudentID == "" || user.SSOPassword == "" {
 		return "", errs.ErrUserEmpty
 	}
-	client, err := loginWithSSO(user.StudentID, user.SSOPassword)
+	cookie, err := JwxtLoginBindSSO(user.StudentID, user.SSOPassword)
+	if err != nil {
+		return "", err
+	}
+	cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
+	return cookie, nil
+}
+
+func JwxtLoginBindSSO(userName, password string) (string, error) {
+	client, err := loginWithSSO(userName, password)
 	if err != nil {
 		logger.Errorf("统一认证登录失败... %s", err)
 		return "", err
@@ -44,10 +54,10 @@ func JwxtLoginWithSSO(openid string) (string, error) {
 	}
 	defer resp.Body.Close()
 	cookie := resp.Request.Header.Get("Cookie")
-	cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
 	return cookie, nil
 }
 
+// JwxtLoginWithJwxt 教务系统原始登录/**
 func JwxtLoginWithJwxt(openid string) (string, error) {
 	cache.Del("lnpu:jwxt:cookie:" + openid)
 	user, err := db.GetUserByID(openid)
@@ -58,6 +68,15 @@ func JwxtLoginWithJwxt(openid string) (string, error) {
 	if user.StudentID == "" || user.JwxtPassword == "" {
 		return "", errs.ErrUserEmpty
 	}
+	cookie, err := JwxtLoginBindJwxt(user.StudentID, user.JwxtPassword)
+	if err != nil {
+		return "", err
+	}
+	cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
+	return cookie, nil
+}
+
+func JwxtLoginBindJwxt(userName, password string) (string, error) {
 	for i := 0; i < 3; i++ {
 		code, client, err := utils.GetVerifyCode(JwxtVerifyCodeUrl)
 		if err != nil {
@@ -66,7 +85,7 @@ func JwxtLoginWithJwxt(openid string) (string, error) {
 			}
 			return "", err
 		}
-		encode := utils.EncodeByBase64(user.StudentID, user.JwxtPassword)
+		encode := utils.EncodeByBase64(userName, password)
 		values := url.Values{}
 		values.Add("RANDOMCODE", code)
 		values.Add("encoded", encode)
@@ -88,7 +107,6 @@ func JwxtLoginWithJwxt(openid string) (string, error) {
 		}
 		cookies := response.Request.Header.Values("Cookie")
 		cookie := strings.Join(cookies, "")
-		cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
 		return cookie, nil
 	}
 	return "", errs.ErrJwxtLoginFailed

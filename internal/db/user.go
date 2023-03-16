@@ -15,3 +15,7 @@ func GetUserByID(openid string) (*model.User, error) {
 	}
 	return &u, nil
 }
+
+func UpdateUser(u *model.User) error {
+	return db.Model(&model.User{}).Where("open_id = ?", u.OpenID).Updates(u).Error
+}

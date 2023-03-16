@@ -21,6 +21,7 @@ func Init(e *gin.Engine) {
 func auth(r *gin.RouterGroup) {
 	r.Use(middlewares.AuthorizationWithToken)
 	r.GET("/login", Wrapper(handles.Login))
+	r.POST("/user/:pattern", Wrapper(handles.BindUser))
 	r.GET("/status", Wrapper(handles.CheckTokenStatus))
 }
 
