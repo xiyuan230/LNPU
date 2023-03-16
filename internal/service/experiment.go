@@ -71,7 +71,7 @@ func GetExpTable(openid string) (*[]model.Experiment, error) {
 			}
 			page := 1
 			var table []model.Experiment
-			for {
+			for i := 0; i < 10; i++ {
 				req, _ := http.NewRequest("GET", ExpTableUrl+"?page="+strconv.Itoa(page), nil)
 				req.Header.Add("Cookie", cookie)
 				resp, err := client.Do(req)
@@ -88,21 +88,21 @@ func GetExpTable(openid string) (*[]model.Experiment, error) {
 					break
 				}
 				courseArea := doc.Find(".page_course_area")
-				for i := 0; i < courseArea.Length(); i++ {
+				for j := 0; j < courseArea.Length(); j++ {
 					experiment := model.Experiment{}
-					experiment.Status = courseArea.Eq(i).Find(".page_course_state").Text()
-					experiment.Week = utils.ExpTableWeekHandle(courseArea.Eq(i).Find(".bf_time_img").Parent().Contents().Eq(2).Text())
-					experiment.Time = strings.Split(courseArea.Eq(i).Find(".bf_time_img").Text(), " ")[1]
-					experiment.Teacher = strings.Split(courseArea.Eq(i).Find(".bf_teacher_img").Text(), "：")[1]
-					experiment.Address = strings.Split(courseArea.Eq(i).Find(".bf_pos_img").Text(), "：")[1]
-					sec := courseArea.Eq(i).Find(".bf_time_img").Parent().Contents().Eq(3).Text()
+					experiment.Status = courseArea.Eq(j).Find(".page_course_state").Text()
+					experiment.Week = utils.ExpTableWeekHandle(courseArea.Eq(j).Find(".bf_time_img").Parent().Contents().Eq(2).Text())
+					experiment.Time = strings.Split(courseArea.Eq(j).Find(".bf_time_img").Text(), " ")[1]
+					experiment.Teacher = strings.Split(courseArea.Eq(j).Find(".bf_teacher_img").Text(), "：")[1]
+					experiment.Address = strings.Split(courseArea.Eq(j).Find(".bf_pos_img").Text(), "：")[1]
+					sec := courseArea.Eq(j).Find(".bf_time_img").Parent().Contents().Eq(3).Text()
 					sec = sec[1 : len(sec)-1]
 					experiment.Section = sec
-					timeText := courseArea.Eq(i).Find(".bf_time_img").Text()
+					timeText := courseArea.Eq(j).Find(".bf_time_img").Text()
 					timeText = strings.Split(strings.Split(timeText, "：")[1], " ")[0]
 					parse, _ := time.Parse("2006-01-02", timeText)
 					experiment.Date = parse.Unix()
-					expName := courseArea.Eq(i).Find(".page_course_state").Parent().Contents().Eq(2).Text()
+					expName := courseArea.Eq(j).Find(".page_course_state").Parent().Contents().Eq(2).Text()
 					expName = strings.Split(strings.TrimSpace(expName), " ")[0]
 					experiment.Name = expName
 					table = append(table, experiment)
