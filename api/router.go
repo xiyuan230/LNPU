@@ -58,8 +58,8 @@ func Wrapper(handle WrapperHandle) gin.HandlerFunc {
 			case errs.ErrPasswordWrong:
 				common.ErrorStrResp(c, 401, "账号或密码错误")
 				return
-			case errs.ErrUserEmpty:
-				common.ErrorStrResp(c, 401, "还未绑定身份信息")
+			case errs.ErrUserIllegal:
+				common.ErrorStrResp(c, 401, "用户参数非法")
 				return
 			case errs.ErrParamMiss:
 				common.ErrorStrResp(c, 401, "请求参数错误")

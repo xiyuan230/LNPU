@@ -27,7 +27,7 @@ func ExpLogin(openid string) (string, error) {
 		return "", err
 	}
 	if user.StudentID == "" || user.ExpPassword == "" {
-		return "", errs.ErrUserEmpty
+		return "", errs.ErrUserIllegal
 	}
 	cookie, err := ExpLoginBind(user.StudentID, user.ExpPassword)
 	if err != nil {

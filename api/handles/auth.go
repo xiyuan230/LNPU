@@ -37,7 +37,7 @@ func BindUser(c *gin.Context) (any, error) {
 	switch pattern {
 	case "jwxt":
 		if user.StudentID == "" || user.JwxtPassword == "" {
-			return "", errs.ErrUserEmpty
+			return "", errs.ErrUserIllegal
 		}
 		cookie, err := service.JwxtLoginBindJwxt(user.StudentID, user.JwxtPassword)
 		if err != nil {
@@ -52,7 +52,7 @@ func BindUser(c *gin.Context) (any, error) {
 		return nil, nil
 	case "sso":
 		if user.StudentID == "" || user.SSOPassword == "" {
-			return "", errs.ErrUserEmpty
+			return "", errs.ErrUserIllegal
 		}
 		cookie, err := service.JwxtLoginBindSSO(user.StudentID, user.SSOPassword)
 		if err != nil {
@@ -67,7 +67,7 @@ func BindUser(c *gin.Context) (any, error) {
 		return nil, nil
 	case "experiment":
 		if user.StudentID == "" || user.ExpPassword == "" {
-			return "", errs.ErrUserEmpty
+			return "", errs.ErrUserIllegal
 		}
 		cookie, err := service.ExpLoginBind(user.StudentID, user.ExpPassword)
 		if err != nil {

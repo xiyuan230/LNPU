@@ -31,7 +31,7 @@ func JwxtLoginWithSSO(openid string) (string, error) {
 		return "", err
 	}
 	if user.StudentID == "" || user.SSOPassword == "" {
-		return "", errs.ErrUserEmpty
+		return "", errs.ErrUserIllegal
 	}
 	cookie, err := JwxtLoginBindSSO(user.StudentID, user.SSOPassword)
 	if err != nil {
@@ -66,7 +66,7 @@ func JwxtLoginWithJwxt(openid string) (string, error) {
 		return "", err
 	}
 	if user.StudentID == "" || user.JwxtPassword == "" {
-		return "", errs.ErrUserEmpty
+		return "", errs.ErrUserIllegal
 	}
 	cookie, err := JwxtLoginBindJwxt(user.StudentID, user.JwxtPassword)
 	if err != nil {
@@ -394,7 +394,7 @@ func UpdateCookie(openid string) (string, error) {
 		if errors.Is(err, redis.Nil) {
 			login, err := JwxtLoginWithSSO(openid)
 			if err != nil {
-				if errors.Is(err, errs.ErrUserEmpty) {
+				if errors.Is(err, errs.ErrUserIllegal) {
 					login, err := JwxtLoginWithJwxt(openid)
 					if err != nil {
 						return "", err
