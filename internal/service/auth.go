@@ -4,6 +4,7 @@ import (
 	"MyLNPU/internal/cache"
 	"MyLNPU/internal/constant"
 	"MyLNPU/internal/db"
+	"MyLNPU/internal/errs"
 	"MyLNPU/internal/logger"
 	"MyLNPU/internal/model"
 	"MyLNPU/internal/utils"
@@ -31,6 +32,9 @@ func Login(code string) (string, error) {
 	}
 	wxResult := model.WXLoginRequest{}
 	json.Unmarshal(result, &wxResult)
+	if wxResult.ErrMsg != "" {
+		return "", errs.ErrWxLoginFailed
+	}
 	_, err = db.GetUserByID(wxResult.Openid)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -8,4 +8,5 @@ type BaseUser struct {
 type WXLoginRequest struct {
 	SessionKey string `json:"session_key"`
 	Openid     string `json:"openid"`
+	ErrMsg     string `json:"errmsg"`
 }
