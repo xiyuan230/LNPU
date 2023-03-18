@@ -4,6 +4,7 @@ import (
 	"MyLNPU/api/common"
 	"MyLNPU/internal/cache"
 	"MyLNPU/internal/db"
+	"MyLNPU/internal/errs"
 	"MyLNPU/internal/utils"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,11 @@ func AuthorizationWithToken(c *gin.Context) {
 			openid, err := utils.JWTParseToken(token)
 			if err != nil {
 				common.ErrorResp(c, 401, err)
+				c.Abort()
+				return
+			}
+			if openid == "" {
+				common.ErrorResp(c, 401, errs.ErrTokenIllegal)
 				c.Abort()
 				return
 			}
