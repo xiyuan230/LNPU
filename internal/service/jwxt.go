@@ -9,7 +9,6 @@ import (
 	"MyLNPU/internal/utils"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/redis/go-redis/v9"
 	"image"
@@ -147,7 +146,6 @@ func GetStudentInfo(openid string) (*model.Student, error) {
 	stu.Major = infoNode.Eq(4).Text()
 	stu.Class = infoNode.Eq(5).Text()
 	logger.Println("获取学生信息[ %s ]成功", stu.Name)
-	fmt.Println(cookie)
 	return &stu, nil
 }
 

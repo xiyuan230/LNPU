@@ -49,7 +49,11 @@ func BindUser(c *gin.Context) (any, error) {
 			return nil, err
 		}
 		cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
-		return nil, nil
+		stu, err := service.GetStudentInfo(openid)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"student_info": stu}, nil
 	case "sso":
 		if user.StudentID == "" || user.SSOPassword == "" {
 			return "", errs.ErrUserIllegal
@@ -64,7 +68,11 @@ func BindUser(c *gin.Context) (any, error) {
 			return nil, err
 		}
 		cache.Set("lnpu:jwxt:cookie:"+openid, cookie, time.Hour*1)
-		return nil, nil
+		stu, err := service.GetStudentInfo(openid)
+		if err != nil {
+			return nil, err
+		}
+		return map[string]any{"student_info": stu}, nil
 	case "experiment":
 		if user.StudentID == "" || user.ExpPassword == "" {
 			return "", errs.ErrUserIllegal

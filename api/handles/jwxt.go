@@ -26,7 +26,7 @@ func JwxtLoginWithSSO(c *gin.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return map[string]any{"student_info": stu}, err
+	return map[string]any{"student_info": stu}, nil
 }
 func JwxtLoginWithJwxt(c *gin.Context) (any, error) {
 	token := c.GetHeader("Authorization")
@@ -36,9 +36,16 @@ func JwxtLoginWithJwxt(c *gin.Context) (any, error) {
 	}
 	_, err = service.JwxtLoginWithJwxt(openid)
 	if err != nil {
+		if errors.Is(err, errs.ErrPasswordWrong) {
+			return nil, err
+		}
 		return nil, err
 	}
-	return map[string]any{"cookie": "success"}, nil
+	stu, err := service.GetStudentInfo(openid)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"student_info": stu}, nil
 }
 func GetStartDate(c *gin.Context) (any, error) {
 	token := c.GetHeader("Authorization")
